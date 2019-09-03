@@ -17,7 +17,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var dealMoreButton: UIButton!
     @IBOutlet weak var setsLabel: UILabel!
     
-//    private lazy var animator = UIDynamicAnimator(referenceView: view)
+    lazy var animator = UIDynamicAnimator(referenceView: view)
+    lazy var cardBehavior = CardBehavior(in: animator)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,37 +41,39 @@ class ViewController: UIViewController {
             configureCardButtonAppearence(forButtonIndex: index)
         }
         
+        //deal cards animation call
         if buttonsDifference > 0 {
             let startIndex = cardsDeckView.buttons.count - buttonsDifference
             animateDealing(forCardIndexes: Array(startIndex..<cardsDeckView.buttons.count))
         }
         
+        //animate matching cards removing
         if game.matchedCards.count == 3 {
-            UIViewPropertyAnimator.runningPropertyAnimator(
-                withDuration: 0.4,
-                delay: 0,
-                options: [],
-                animations: {
-                    for matchedCardIndex in self.game.matchedCards {
-                        self.cardsDeckView.buttons[matchedCardIndex].alpha = 0
-                    }
-                    return
-            },
-                completion: { _ in
-                    let matchedCards = self.game.matchedCards
+            for matchedCardIndex in self.game.matchedCards {
+                self.cardBehavior.addItem(self.cardsDeckView.buttons[matchedCardIndex])
+            }
+            
+            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+                let matchedCards = self.game.matchedCards
 
-                    if self.game.dealCards() {
+                for matchedCardIndex in self.game.matchedCards {
+                    self.cardBehavior.removeItem(self.cardsDeckView.buttons[matchedCardIndex])
+                }
+                
+                self.animateMatchingCards(forCardIndexes: matchedCards)
+                if self.game.dealCards() {
+                    Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { _ in
                         matchedCards.forEach() {
                             self.configureCardButtonAppearence(forButtonIndex: $0)
-                            self.cardsDeckView.buttons[$0].isBack = true
                         }
                         self.animateDealing(forCardIndexes: matchedCards)
                     }
-                    else {
-                        self.cardsDeckView.removeCardButtons(withIndexes: matchedCards)
-                    }
-                    self.updateCardsView()
-            })
+                }
+                else {
+                    self.cardsDeckView.removeCardButtons(withIndexes: matchedCards)
+                }
+                self.updateCardsView()
+            }
         }
         
         updateUIElements()
@@ -142,6 +145,7 @@ class ViewController: UIViewController {
         }
     }
     
+    //animation for cards dealing
     private func animateDealing(forCardIndexes cardIndexes: [Int]) {
         for (index, cardIndex) in cardIndexes.enumerated() {
             let currentCardButton = cardsDeckView.buttons[cardIndex]
@@ -156,7 +160,7 @@ class ViewController: UIViewController {
             
             UIViewPropertyAnimator.runningPropertyAnimator(
                 withDuration: 0.3,
-                delay: 0 + 0.3*Double(index),
+                delay: 0.3*Double(index),
                 options: [],
                 animations:
                 {
@@ -168,9 +172,34 @@ class ViewController: UIViewController {
                     UIView.transition(with: currentCardButton,
                                       duration: 0.3,
                                       options: [.transitionFlipFromLeft],
-                                      animations: {currentCardButton.isBack = false})
+                                      animations: { currentCardButton.isBack = false })
                     
             })
+        }
+    }
+    
+    //animation for matched cards removing
+    private func animateMatchingCards(forCardIndexes cardIndexes: [Int]) {
+        for (index, cardIndex) in cardIndexes.enumerated() {
+            let currentCardButton = cardsDeckView.buttons[cardIndex]
+            
+            //ending position
+            var frame = setsLabel.superview!.convert(setsLabel.frame, to: view)
+            frame = frame.offsetBy(dx: -setsLabel.frame.width/2, dy: -setsLabel.frame.height/2)
+            frame.size = currentCardButton.frame.size
+            
+            UIView.transition(with: currentCardButton,
+                              duration: 0.3,
+                              options: [.transitionFlipFromLeft],
+                              animations: { currentCardButton.isBack = true },
+                              completion: {_ in
+                                UIViewPropertyAnimator.runningPropertyAnimator(
+                                    withDuration: 0.3,
+                                    delay: 0.3*Double(index),
+                                    options: [],
+                                    animations: { currentCardButton.frame = frame },
+                                    completion: {_ in currentCardButton.alpha = 0 })
+                                })
         }
     }
     

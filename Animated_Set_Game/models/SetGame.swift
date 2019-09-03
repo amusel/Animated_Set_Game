@@ -31,7 +31,6 @@ struct SetGame {
             }
         }
         deck.shuffle()
-        deck.removeLast(60)
     }
     
     @discardableResult mutating func dealCards(amount: Int = 3) -> Bool {
@@ -95,7 +94,6 @@ struct SetGame {
     }
     
     func matchSelected() -> Bool {
-        return true
         let first = cardsInGame[selectedCards[0]]
         let second = cardsInGame[selectedCards[1]]
         let third = cardsInGame[selectedCards[2]]
