@@ -54,7 +54,22 @@ class CardButton: UIButton {
         }
     }
     
+    var isBack = true {
+        didSet {
+            if !isBack {
+                layer.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+            }
+            
+            setNeedsDisplay()
+        }
+    }
+    
     override func draw(_ rect: CGRect) {
+        if isBack {
+            layer.backgroundColor = #colorLiteral(red: 1, green: 0.5745739937, blue: 0.001978197834, alpha: 1)
+            return
+        }
+        
         let rectangles = getRectangles(amount: symbolAmount)
         let path = UIBezierPath()
         let drawFunc: (CGRect) -> UIBezierPath

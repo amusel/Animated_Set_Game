@@ -14,7 +14,7 @@ class CardsDeckView: UIView {
     // An empty implementation adversely affects performance during animation.
     
     private(set) var buttons = [CardButton]()
-    private lazy var grid = Grid(layout: .aspectRatio(5/8))
+    private(set) lazy var grid = Grid(layout: .aspectRatio(5/8))
     
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -22,10 +22,15 @@ class CardsDeckView: UIView {
         
         for (i, button) in buttons.enumerated() {
             if let frame = grid[i] {
-                button.frame = frame
                 button.layer.cornerRadius = 10
                 button.layer.borderColor = #colorLiteral(red: 0.501960814, green: 0.501960814, blue: 0.501960814, alpha: 1)
                 button.layer.borderWidth = 1
+                
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.2,
+                    delay: 0,
+                    options: [],
+                    animations: {button.frame = frame})
             }
         }
     }
@@ -33,6 +38,7 @@ class CardsDeckView: UIView {
     func addCardsButtons(amount: Int = 3){
         for _ in 0..<amount {
             let newCardButton = CardButton()
+            newCardButton.alpha = 0
             buttons.append(newCardButton)
             addSubview(newCardButton)
         }
@@ -41,13 +47,12 @@ class CardsDeckView: UIView {
         setNeedsLayout()
     }
     
-    func removeCardButtons(amount: Int) {
-        for _ in 0..<amount {
-            buttons.removeLast().removeFromSuperview()
+    func removeCardButtons(withIndexes indexes: [Int]) {
+        for index in indexes {
+            buttons.remove(at: index)
         }
 
         grid.cellCount = buttons.count
-        
         setNeedsLayout()
     }
     

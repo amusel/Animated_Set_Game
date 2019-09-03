@@ -14,6 +14,10 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var cardsDeckView: CardsDeckView!
     @IBOutlet weak var scoreLabel: UILabel!
+    @IBOutlet weak var dealMoreButton: UIButton!
+    @IBOutlet weak var setsLabel: UILabel!
+    
+//    private lazy var animator = UIDynamicAnimator(referenceView: view)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,7 +27,7 @@ class ViewController: UIViewController {
     }
     
     func updateCardsView() {
-        //manage the amount of buttons to be equal to cards in game amount
+        //add buttons if needed
         let buttonsDifference = game.cardsInGame.count - cardsDeckView.buttons.count
         if buttonsDifference > 0 {
             cardsDeckView.addCardsButtons(amount: buttonsDifference)
@@ -31,63 +35,101 @@ class ViewController: UIViewController {
                 button.addTarget(self, action: #selector(selectCard(_:)), for: .touchUpInside)
             }
         }
-        else if buttonsDifference < 0{
-            cardsDeckView.removeCardButtons(amount: -buttonsDifference)
-        }
         
         for index in 0..<game.cardsInGame.count {
-            let currentCard = game.cardsInGame[index]
-            let currentCardButton = cardsDeckView.buttons[index]
-            
-            //set correct background color
-            if game.selectedCards.contains(currentCard) {
-                if game.selectedCards.count == 3 {
-                    currentCardButton.layer.backgroundColor = CardBackgroundColors.wrongMatch.get()
-                }
-                else {
-                    currentCardButton.layer.backgroundColor = CardBackgroundColors.selected.get()
-                }
-            }
-            else if game.matchedCards.contains(currentCard) {
-                currentCardButton.layer.backgroundColor = CardBackgroundColors.correctMatch.get()
-            }
-            else {
-                currentCardButton.layer.backgroundColor = CardBackgroundColors.standard.get()
-            }
-            
-            //setting cardButton`s symbol properties
-            switch currentCard.shape {
-            case .squiggle:
-                currentCardButton.symbolShape = .squiggle
-            case .diamond:
-                currentCardButton.symbolShape = .diamond
-            case .oval:
-                currentCardButton.symbolShape = .oval
-            }
-            
-            switch currentCard.shading {
-            case .solid:
-                currentCardButton.symbolShading = .solid
-            case .striped:
-                currentCardButton.symbolShading = .striped
-            case .outlined:
-                currentCardButton.symbolShading = .outlined
-            }
-            
-            switch currentCard.color {
-            case .green:
-                currentCardButton.symbolColor = .green
-            case .red:
-                currentCardButton.symbolColor = .red
-            case .purple:
-                currentCardButton.symbolColor = .purple
-            }
-            
-            currentCardButton.symbolAmount = currentCard.amount.rawValue
-            
+            configureCardButtonAppearence(forButtonIndex: index)
         }
         
+        if buttonsDifference > 0 {
+            let startIndex = cardsDeckView.buttons.count - buttonsDifference
+            animateDealing(forCardIndexes: Array(startIndex..<cardsDeckView.buttons.count))
+        }
+        
+        if game.matchedCards.count == 3 {
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.4,
+                delay: 0,
+                options: [],
+                animations: {
+                    for matchedCardIndex in self.game.matchedCards {
+                        self.cardsDeckView.buttons[matchedCardIndex].alpha = 0
+                    }
+                    return
+            },
+                completion: { _ in
+                    let matchedCards = self.game.matchedCards
+
+                    if self.game.dealCards() {
+                        matchedCards.forEach() {
+                            self.configureCardButtonAppearence(forButtonIndex: $0)
+                            self.cardsDeckView.buttons[$0].isBack = true
+                        }
+                        self.animateDealing(forCardIndexes: matchedCards)
+                    }
+                    else {
+                        self.cardsDeckView.removeCardButtons(withIndexes: matchedCards)
+                    }
+                    self.updateCardsView()
+            })
+        }
+        
+        updateUIElements()
+    }
+    
+    private func configureCardButtonAppearence(forButtonIndex index: Int) {
+        let card = game.cardsInGame[index]
+        let button = cardsDeckView.buttons[index]
+        
+        //set correct background color
+        if game.selectedCards.contains(index) {
+            if game.selectedCards.count == 3 {
+                button.layer.backgroundColor = CardBackgroundColors.wrongMatch.get()
+            }
+            else {
+                button.layer.backgroundColor = CardBackgroundColors.selected.get()
+            }
+        }
+        else if game.matchedCards.contains(index) {
+            button.layer.backgroundColor = CardBackgroundColors.correctMatch.get()
+        }
+        else {
+            button.layer.backgroundColor = CardBackgroundColors.standard.get()
+        }
+        
+        //setting cardButton`s symbol properties
+        switch card.shape {
+        case .squiggle:
+            button.symbolShape = .squiggle
+        case .diamond:
+            button.symbolShape = .diamond
+        case .oval:
+            button.symbolShape = .oval
+        }
+        
+        switch card.shading {
+        case .solid:
+            button.symbolShading = .solid
+        case .striped:
+            button.symbolShading = .striped
+        case .outlined:
+            button.symbolShading = .outlined
+        }
+        
+        switch card.color {
+        case .green:
+            button.symbolColor = .green
+        case .red:
+            button.symbolColor = .red
+        case .purple:
+            button.symbolColor = .purple
+        }
+        
+        button.symbolAmount = card.amount.rawValue
+    }
+    
+    private func updateUIElements() {
         scoreLabel.text = "Score: \(game.score)"
+        setsLabel.text = "\(game.sets)  " + (game.sets == 1 ? "Set" : "Sets")
         
         //update dealMoreButton status
         if game.cardsLeftInDeck == 0 {
@@ -100,22 +142,46 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBOutlet weak var dealMoreButton: UIButton!
-    @IBAction func dealMore(_ sender: UIButton) {
+    private func animateDealing(forCardIndexes cardIndexes: [Int]) {
+        for (index, cardIndex) in cardIndexes.enumerated() {
+            let currentCardButton = cardsDeckView.buttons[cardIndex]
+            
+            //set starting position
+            currentCardButton.frame = dealMoreButton.superview!.convert(dealMoreButton.frame, to: view)
+            currentCardButton.frame = currentCardButton.frame.offsetBy(dx: -dealMoreButton.frame.width/2, dy: -dealMoreButton.frame.height/2)
+            currentCardButton.frame.size.width = dealMoreButton.frame.width*1.5
+            currentCardButton.frame.size.height = currentCardButton.frame.size.width * (8/5)
+            
+            currentCardButton.alpha = 1
+            
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.3,
+                delay: 0 + 0.3*Double(index),
+                options: [],
+                animations:
+                {
+                    if let frame = self.cardsDeckView.grid[cardIndex] {
+                        currentCardButton.frame = frame
+                    }
+            },
+                completion: {_ in
+                    UIView.transition(with: currentCardButton,
+                                      duration: 0.3,
+                                      options: [.transitionFlipFromLeft],
+                                      animations: {currentCardButton.isBack = false})
+                    
+            })
+        }
+    }
+    
+    @IBAction func dealCards(_ sender: UIButton) {
         game.dealCards()
         updateCardsView()
     }
     
-    @IBAction func dealCards(_ sender: UISwipeGestureRecognizer) {
+    @IBAction func dealCardsWithGesture(_ sender: UISwipeGestureRecognizer) {
         if sender.state == .ended {
             game.dealCards()
-            updateCardsView()
-        }
-    }
-    
-    @IBAction func shuffleCards(_ sender: UIRotationGestureRecognizer) {
-        if sender.state == .ended {
-            game.cardsInGame.shuffle()
             updateCardsView()
         }
     }
@@ -123,11 +189,6 @@ class ViewController: UIViewController {
     @objc func selectCard(_ sender: CardButton) {
         if let index = cardsDeckView.buttons.firstIndex(of: sender), index < game.cardsInGame.count {
             game.selectCard(withIndex: index)
-            
-            // deal cards if there are matched cards
-            if game.matchedCards.count == 3 && game.selectedCards.count > 0 {
-                game.dealCards()
-            }
         }
         updateCardsView()
     }

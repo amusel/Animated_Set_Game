@@ -22,32 +22,28 @@
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="66d-up-lct">
                                 <rect key="frame" x="20" y="820" width="374" height="42"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nxO-xR-M4K">
-                                        <rect key="frame" x="0.0" y="0.0" width="120" height="42"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="25"/>
-                                        <state key="normal" title="New Game">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KW6-Iu-t67">
+                                        <rect key="frame" x="0.0" y="0.0" width="68" height="42"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="35"/>
+                                        <state key="normal" title="Deal">
                                             <color key="titleColor" red="1" green="0.57457399369999995" blue="0.0019781978339999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
                                         <connections>
-                                            <action selector="newGame:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Rae-ew-KTz"/>
+                                            <action selector="dealCards:" destination="BYZ-38-t0r" eventType="touchUpInside" id="SfF-Wv-7gm"/>
+                                            <action selector="dealCardsWithGesture:" destination="BYZ-38-t0r" eventType="touchUpInside" id="GzH-10-1ij"/>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Score: 0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4ne-NT-XM4">
-                                        <rect key="frame" x="147.66666666666666" y="0.0" width="90" height="42"/>
+                                        <rect key="frame" x="128" y="0.0" width="90" height="42"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="25"/>
-                                        <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aP1-4h-sGL">
-                                        <rect key="frame" x="265" y="0.0" width="109" height="42"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="25"/>
-                                        <state key="normal" title="Deal more">
-                                            <color key="titleColor" red="1" green="0.57457399369999995" blue="0.0019781978339999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="dealMore:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dCU-xV-xCQ"/>
-                                        </connections>
-                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0 Sets" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xgV-db-gWP">
+                                        <rect key="frame" x="277.66666666666669" y="0.0" width="96.333333333333314" height="42"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="35"/>
+                                        <color key="textColor" red="1" green="0.57457399369999995" blue="0.0019781978339999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                             </stackView>
                             <view contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="uW8-0w-HXb" customClass="CardsDeckView" customModule="Animated_Set_Game" customModuleProvider="target">
@@ -59,7 +55,6 @@
                                 </constraints>
                                 <connections>
                                     <outletCollection property="gestureRecognizers" destination="RMQ-r9-E6G" appends="YES" id="OJ0-72-Knx"/>
-                                    <outletCollection property="gestureRecognizers" destination="b1B-Fa-09C" appends="YES" id="Sxo-yV-GSf"/>
                                 </connections>
                             </view>
                         </subviews>
@@ -76,22 +71,18 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="SetsLabel" destination="xgV-db-gWP" id="wSN-2G-lVb"/>
                         <outlet property="cardsDeckView" destination="uW8-0w-HXb" id="NAS-PO-lGp"/>
-                        <outlet property="dealMoreButton" destination="aP1-4h-sGL" id="9fv-4s-EGZ"/>
+                        <outlet property="dealMoreButton" destination="KW6-Iu-t67" id="ZQw-6O-rFB"/>
                         <outlet property="scoreLabel" destination="4ne-NT-XM4" id="3bb-kW-GRT"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
                 <swipeGestureRecognizer direction="down" id="RMQ-r9-E6G">
                     <connections>
-                        <action selector="dealCards:" destination="BYZ-38-t0r" id="6aV-ms-bgI"/>
+                        <action selector="dealCardsWithGesture:" destination="BYZ-38-t0r" id="6aV-ms-bgI"/>
                     </connections>
                 </swipeGestureRecognizer>
-                <rotationGestureRecognizer rotation="999.99999999999989" id="b1B-Fa-09C">
-                    <connections>
-                        <action selector="shuffleCards:" destination="BYZ-38-t0r" id="cDE-aR-0k7"/>
-                    </connections>
-                </rotationGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="137.68115942028987" y="97.767857142857139"/>
         </scene>
